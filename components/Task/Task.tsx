@@ -1,12 +1,30 @@
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import React from "react";
 
 interface Props {
   title: string;
   description: string;
   isDone: boolean;
+  _id: string;
 }
 
-const Task = ({ title, description, isDone }: Props) => {
+const Task = ({ title, description, isDone, _id }: Props) => {
+  const markAsDone = useMutation(
+    (isDone: boolean) =>
+      axios.put(`https://api.tablebackend.com/v1/rows/kZCWhv3BlpXi`, {
+        title: title,
+        description: description,
+        isdone: isDone,
+        _id: _id,
+      }),
+    {
+      onSuccess: (data) => {
+        console.log(data);
+      },
+    }
+  );
+
   return (
     <div
       id="task"
@@ -21,7 +39,8 @@ const Task = ({ title, description, isDone }: Props) => {
               viewBox="0 0 24 24"
               stroke-width="1.5"
               stroke="currentColor"
-              className="w-6 h-6 text-slate-500"
+              className="w-6 h-6 text-slate-500 hover:text-orange-600 hover:cursor-pointer"
+              onClick={() => markAsDone.mutate(false)}
             >
               <path
                 stroke-linecap="round"
@@ -37,6 +56,7 @@ const Task = ({ title, description, isDone }: Props) => {
               stroke-width="1.5"
               stroke="currentColor"
               className="w-6 h-6 text-slate-500 hover:text-indigo-600 hover:cursor-pointer"
+              onClick={() => markAsDone.mutate(true)}
             >
               <path
                 stroke-linecap="round"
