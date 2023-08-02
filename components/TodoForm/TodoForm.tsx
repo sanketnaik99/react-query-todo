@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Field, Formik, Form } from "formik";
 import React from "react";
@@ -21,6 +21,15 @@ interface FormValues {
 }
 
 const TodoForm = () => {
+  // useMutation(mutationFn, { config })
+
+  /*
+  Post an op -> Response -> id -> fetch op-details
+  mutation -> onSuccess -> useQuery -> fetch op-details (retry till you get it)
+
+  */
+  const queryClient = useQueryClient();
+
   const addTodo = useMutation(
     (values: FormValues) =>
       axios
@@ -36,6 +45,43 @@ const TodoForm = () => {
       onSuccess: (data) => {
         console.log("Success");
         console.log(data);
+        // queryClient.invalidateQueries(["ops"]); // Invalidate cache data -> refetch when the component is mounted
+        // queryClient.refetchQueries(["ops"]); // Refetch data -> refetch instantly -> Don't use this much
+        // const oldData = queryClient.getQueryData(["ops"]);
+        // console.log(oldData);
+        // queryClient.setQueryData(["ops"], (oldData: any) => {
+        //   return {
+        //     ...oldData,
+        //     data: [...oldData.data, data[0]],
+        //   };
+        // });
+        // navigate them to op-details
+      },
+      // You call a mutation -> if that fails -> revert the optimistic update
+      onMutate(variables) {
+        const oldData = queryClient.getQueryData(["ops"]);
+
+        queryClient.setQueryData(["ops"], (oldData: any) => {
+          return {
+            ...oldData,
+            data: [...oldData.data, { ...variables, _id: "temp-id" }],
+          };
+        });
+        // A mutation is about to happen!
+        // Optionally return a context containing data to use when for example rolling back
+        // the optimistic update
+        return { oldData };
+      },
+      onSettled(data, error, variables, context) {
+        // The mutation is done!
+        // You probably want to hide a loading indicator now
+      },
+      onError(error, variables, context) {
+        // An error happened!
+        // You can also use the context here to roll back an optimistic update
+        queryClient.setQueryData(["ops"], (oldData: any) => {
+          return context?.oldData;
+        });
       },
     }
   );

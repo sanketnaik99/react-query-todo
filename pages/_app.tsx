@@ -31,7 +31,7 @@ export default function App({ Component, pageProps }: AppProps) {
         </div>
       </header>
       <Component {...pageProps} />
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools initialIsOpen={false} position="top-left" />
     </QueryClientProvider>
   );
 }

@@ -5,6 +5,7 @@ import TodoForm from "@/components/TodoForm/TodoForm";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import TaskSkeleton from "@/components/TaskSkeleton/TaskSkeleton";
+import { Suspense } from "react";
 
 export interface TasksResponse {
   data: Task[];
@@ -23,8 +24,9 @@ export interface Task {
 }
 
 export default function Home() {
+  // useQuery([key], queryFn, { config }})
   const tasksQuery = useQuery(
-    ["tasks"],
+    ["ops"],
     () =>
       axios
         .get<TasksResponse>("https://api.tablebackend.com/v1/rows/kZCWhv3BlpXi")
@@ -33,7 +35,7 @@ export default function Home() {
           return res.data;
         }),
     {
-      staleTime: 1000 * 20,
+      staleTime: 1000 * 20, // How long the query remains fresh
     }
   );
 
